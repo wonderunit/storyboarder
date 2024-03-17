@@ -1,0 +1,791 @@
+{
+  "vr-enter": "Accesso VR",
+  "Language": "Lingua",
+  "Name": "Italiano",
+  "menu": {
+    "view": {
+      "title": "Vista",
+      "reload": "Ricarica",
+      "toggle-dev-tools": "Attiva strumenti per sviluppatori",
+      "cycle-view-mode": "Modalità di visualizzazione ciclica",
+      "reverse-cycle-view-mode": "Modalità di visualizzazione a ciclo inverso",
+      "toggle-grid-guide": "Attiva la guida della griglia",
+      "toggle-center-guide": "Attiva la guida del centro",
+      "toggle-thirds-guide": "Attiva la guida per terzi",
+      "toggle-3D-guide": "Attiva la Guida 3D",
+      "toggle-onion-skin": "Attiva la pelle di cipolla",
+      "toggle-captions": "Attiva didascalie",
+      "toggle-boards-timeline-mode": "Attiva la modalità Bacheche/Timeline",
+      "toggle-fullscreen": "Attiva schermo intero",
+      "actual-size": "Canvas: dimensioni reali",
+      "enable-fps-meter": "Abilita misuratore FPS",
+      "scale-ui-up": "UI: aumento delle dimensioni",
+      "scale-ui-down": "UI: Rimpicciolire",
+      "reset-ui-scale": "UI: Ripristina la scala al 100%",
+      "cycle-shading-mode": "Modalità ciclica di ombreggiatura"
+    },
+    "file": {
+      "title": "File",
+      "open": "Apri…",
+      "save": "Salva",
+      "save-as": "Salva come …",
+      "export-animated-gif": "Esporta GIF animata",
+      "export-scene-final-cut-proX-and-premiere": "Esporta scena per Final Cut Pro X e Premiere",
+      "export-scene-as-images": "Esporta scena come immagini",
+      "export-video": "Esporta Video",
+      "export-to-web": "Esporta sul Web …",
+      "export-project-as-zip": "Esporta progetto come ZIP",
+      "clean-up-scene": "Azzera la scena…",
+      "print-pdf": "Stampa o esporta in PDF…",
+      "print-storyboarder-worksheet": "Stampa un foglio di lavoro Storyboarder…",
+      "import-worksheets": "Importa fogli di lavoro…",
+      "import-images-to-new-boards": "Importa immagini in nuove bacheche…",
+      "import-image-and-replace": "Sostituisci l'immagine del livello di riferimento…",
+      "export-glTF": "Esporta glTF…"
+    },
+    "edit": {
+      "title": "Modifica",
+      "undo": "Annulla",
+      "redo": "Rifai",
+      "cut": "Taglia",
+      "copy": "Copia",
+      "paste": "Incolla",
+      "paste-and-replace": "Incolla e sostituisci",
+      "select-all": "Seleziona tutto",
+      "preferences": "Preferenze",
+      "delete": "Elimina",
+      "group-ungroup": "Raggruppa / Separa",
+      "open-shot-explorer": "Apri cartella degli scatti",
+      "duplicate": "Duplica",
+      "drop": "Elimina"
+    },
+    "window": {
+      "title": "Finestra",
+      "zoom": "Ingrandimento",
+      "bring-all-to-front": "Porta tutto in primo piano",
+      "minimize": "Minimizza",
+      "close-window": "Chiudi finestra"
+    },
+    "help": {
+      "title": "Aiuto",
+      "key-commands": "Comandi chiave…",
+      "show-me-story-tip": "Mostrami un suggerimento per la storia!",
+      "learn-more": "Ulteriori informazioni",
+      "getting-started": "Iniziare…",
+      "faq": "Domande frequenti…",
+      "bug-submit": "Trovato un bug? Invia una segnalazione!!!",
+      "show-log-file": "Mostra file log..."
+    },
+    "navigation": {
+      "title": "Navigazione",
+      "play": "Avvio",
+      "previous-board": "Bacheca precedente",
+      "next-board": "Prossima bacheca",
+      "previous-scene": "Scena precedente",
+      "next-scene": "Scena successiva",
+      "stop-all-board-audio": "Arresta l'audio di tutta le tavole",
+      "toggle-speaking": "Attiva la conversazione",
+      "audition-board-audio": "Audio della bacheca d'audizione"
+    },
+    "boards": {
+      "title": "Tavole",
+      "new-board": "Nuova bacheca",
+      "new-board-before": "Nuova bacheca prima",
+      "delete-boards": "Elimina tavole",
+      "delete-boards-go-forward": "Elimina tavole - Vai avanti",
+      "duplicate-board": "Duplica bacheca",
+      "reorder-left": "Riordina a sinistra",
+      "reorder-right": "Riordina a destra",
+      "add-audio-file": "Aggiungi file audio…",
+      "toggle-board-as-new-shot": "Attiva bacheca come nuovo scatto"
+    },
+    "tools": {
+      "title": "Strumenti",
+      "light-pencil": "Matita leggera",
+      "brush": "Pennello",
+      "tone": "Tono pastello",
+      "pencil": "Matita",
+      "pen": "Penna",
+      "note-pen": "Penna per annotazione",
+      "eraser": "Gomma",
+      "clear-all-layers": "Elimina tutti i livelli",
+      "clear-layer": "Elimina livello",
+      "smaller-brush": "Pennello piccolo",
+      "larger-brush": "Pennello grande",
+      "use-palette-color1": "Usa la tavolozza dei colori 1",
+      "use-palette-color2": "Usa la tavolozza dei colori 2",
+      "use-palette-color3": "Usa la tavolozza dei colori 3",
+      "flip-horizontal": "Capovolgi orizzontalmente",
+      "flip-vertical": "Capovolgi verticalmente",
+      "shot-generator": "Generatore di scatti",
+      "edit-in-photoshop": "Modifica in Photoshop"
+    },
+    "about": {
+      "title": "Informazioni",
+      "services": "Servizi",
+      "hide": "Nascondi",
+      "hide-others": "Nascondi altri",
+      "unhide": "Mostra",
+      "quit": "Esci"
+    },
+    "language": {
+      "edit": "Modifica"
+    }
+  },
+  "welcome-window": {
+    "recentStoryboards": "Storyboard recenti",
+    "new-storyboard": "Crea un nuovo storyboard…",
+    "welcome-line-1": "Storyboarder ti consente semplicemente di caricare visivamente le tue storie il più velocemente possibile.",
+    "welcome-line-2": "Puoi lavorare partendo da una storia scritta o creare un file board completamente nuovo. Crea una bacheca, disegnala, crea una bacheca, disegnala e inizia a vedere la tua storia prendere vita. Puoi anche stampare fogli di lavoro, disegnarci sopra e importarli facilmente.",
+    "welcome-line-3": "Iniziamo..."
+  },
+  "main-window": {
+    "toolbar": {
+      "tools": {
+        "light-pencil": {
+          "title": "Matita leggera",
+          "description": "Con questo strumento puoi abbozzare idee. Sentiti libero di commettere errori. Questo strumento disegna sul livello di riferimento, quindi puoi cancellare facilmente queste linee."
+        },
+        "brush": {
+          "title": "Pennello",
+          "description": "Dipingi e riempi con questo strumento. La penna a pennello è un flusso costante di inchiostro. Questo strumento disegna sul livello di riempimento."
+        },
+        "tone": {
+          "title": "Tono pastello",
+          "description": "Tonifica e sfuma con questo strumento. Questo strumento disegna sul livello della tonalità."
+        },
+        "pencil": {
+          "title": "Matita",
+          "description": "Disegna e ombreggia i dettagli con questo strumento. È più leggero e morbido della penna. Questo strumento disegna sul livello della matita."
+        },
+        "pen": {
+          "title": "Penna",
+          "description": "Questo strumento è per linee dure e più spesse. Utilizzare questo strumento per l'inchiostrazione e il contorno finali. Questo strumento disegna sul livello di inchiostro."
+        },
+        "note-pen": {
+          "title": "Penna per annotazioni",
+          "description": "Rivedi le schede con questo strumento. Hai una nota? Scrivila proprio sopra al tabellone. Questo strumento agisce sul livello delle note, quindi è facile da rimuovere. Questo strumento disegna sul livello delle note."
+        },
+        "eraser": {
+          "title": "Gomma",
+          "description": "Hai fatto un errore? Usa la gomma. Se tieni premuto opzione (o alt) cancellerà solo il livello dello strumento su cui ti trovi, altrimenti agirà su tutti i livelli."
+        }
+      },
+      "colors": {
+        "current-color": {
+          "title": "Colore attuale",
+          "description": "Clicca per cambiare il colore attuale."
+        },
+        "controls-size": {
+          "title": "Dimensione pennello",
+          "description": "Trascina il valore per aumentare o diminuire la dimensione del pennello... o usa semplicemente i comandi da tastiera come un vero professionista!"
+        },
+        "controls-stroke-opacity": {
+          "title": "Opacità del tratto",
+          "description": "Trascina il valore per regolare l'opacità complessiva dei nuovi tratti."
+        },
+        "palette-colorA": {
+          "title": "Tavolozza dei colori 1",
+          "description": "Clicca per impostare il colore corrente su questo. Tieni premuto per impostare questo colore su un altro."
+        },
+        "palette-colorB": {
+          "title": "Tavolozza dei colori 2",
+          "description": "Clicca per impostare il colore corrente su questo. Tieni premuto per impostare questo colore su un altro."
+        },
+        "palette-colorC": {
+          "title": "Tavolozza dei colori 3",
+          "description": "Clicca per impostare il colore corrente su questo. Tieni premuto per impostare questo colore su un altro."
+        }
+      },
+      "editing": {
+        "toolbar-trash": {
+          "title": "Pulisci area",
+          "description": "Premi per pulire l'intera area di disegno! Non preoccuparti, puoi sempre annullare."
+        },
+        "toolbar-move": {
+          "title": "Modalità spostamento",
+          "description": "Trascina l'immagine per spostarla."
+        },
+        "toolbar-scale": {
+          "title": "Modalità scala",
+          "description": "Trascina l'immagine per ridimensionare."
+        },
+        "toolbar-marquee": {
+          "title": "Strumento lazo",
+          "description": "Con il lazo puoi selezionare artisticamente un'area da manipolare.\n<p>\nDisegna un'area con il lazo. Aggiungi all'area con SHIFT + disegna. Sottrai con ALT/OPZIONE + disegna. \n Premi 'f' per riempire l'area con il colore e l'opacità correnti del pennello. Premi CANC/ELIMINA per cancellare l'area.\n</p>\n<p>\nPremi e tieni premuto all'interno dell'area legata al lazo per iniziare a muoverti, quindi trascina. Riempi e cancella il lavoro anche dopo lo spostamento.\n</p>\n<p>\nINVIO per confermare. ESC per annullare.\n</p>"
+        }
+      },
+      "actions": {
+        "toolbar-undo": {
+          "title": "Annulla",
+          "description": "Hai fatto un errore? Nessun problema, puoi annullare!"
+        },
+        "toolbar-redo": {
+          "title": "Rifai",
+          "description": "Hai annullato troppe volte? Puoi tornare indietro dall'annullamento."
+        }
+      },
+      "view": {
+        "toolbar-grid": {
+          "title": "Guida a griglia",
+          "description": "Attiva/disattiva la griglia per misurare meglio il disegno o fare linee dritte."
+        },
+        "toolbar-center": {
+          "title": "Guida centrata",
+          "description": "Attiva/disattiva la guida della linea centrale per assicurarti che il disegno sia centrato."
+        },
+        "toolbar-thirds": {
+          "title": "Guida per la regola dei terzi",
+          "description": "Attiva/disattiva la guida dei terzi per centrare l'attenzione sui terzi. Qualsiasi direttore della fotografia mediocre lo usa continuamente!"
+        },
+        "toolbar-perspective": {
+          "title": "Guida 3D",
+          "description": "Abbina una griglia 3D per il tuo scatto generato. Se non disponi di uno scatto generato, otterrai una visualizzazione 3D a livello degli occhi."
+        },
+        "toolbar-onion": {
+          "title": "Pelle di cipolla",
+          "description": "Attiva/disattiva la visualizzazione dell'ultimo fotogramma e di quello successivo in modo da poter intercalare gli scatti per transizioni e animazioni."
+        },
+        "toolbar-captions": {
+          "title": "Didascalie",
+          "description": "Attiva/disattiva la sovrapposizione dei sottotitoli dei dialoghi."
+        }
+      },
+      "externals": {
+        "toolbar-open-in-editor": {
+          "title": "Modifica in Photoshop",
+          "description": "Clicca qui per modificare la scheda in Photoshop. Una volta terminata la modifica, salva il file in Photoshop. Si aggiornerà automaticamente in Storyboarder."
+        }
+      },
+      "pomodoro": {
+        "toolbar-pomodoro-rest": {
+          "title": "Schizzo sprint",
+          "description": "Imposta un timer e registra un timelapse del tuo lavoro."
+        },
+        "toolbar-pomodoro-running": {
+          "title": "Schizzo sprint",
+          "description": "Imposta un timer e registra un timelapse del tuo lavoro."
+        }
+      }
+    },
+    "board-information": {
+      "shot": "Scatto",
+      "of": "della",
+      "board": "bacheca",
+      "line-mileage": {
+        "title": "Percorso della linea",
+        "description": "Mentre disegni, si sommano le miglia della linea. Questo è utile per sapere quanto stai disegnando per ogni scatto. Ricorda, non stai cercando di creare la prossima Monnalisa. Stai solo cercando di trasmettere l'idea."
+      },
+      "shot-generator-container": {
+        "title": "Apri",
+        "description": "Generatore di scatti"
+      },
+      "new-shot": "Nuovo scatto?",
+      "new-shot-tooltip": {
+        "title": "Questa bacheca è un nuovo scatto?",
+        "description": "Seleziona questa casella se la bacheca è un nuovo scatto. Puoi avere più tavole per scatto. In questo modo puoi animare o effettuare una transizione in uno scatto."
+      },
+      "duration": "Durata",
+      "duration-ms": {
+        "title": "Imposta la durata della bacheca",
+        "description": "Inserisci il numero di millisecondi per una scheda. In un secondo ci sono 1000 millisecondi. 2000 millisecondi è l'impostazione predefinita."
+      },
+      "duration-fps": {
+        "title": "Imposta la durata della bacheca",
+        "description": "Inserisci il numero di fotogrammi per la bacheca."
+      },
+      "dialog-title": "Dialogo",
+      "suggested-dialogue-duration": {
+        "title": "Durata suggerita della bacheca",
+        "description": "Clicca per impostare la durata in base al testo del dialogo."
+      },
+      "dialogue-tooltip": {
+        "title": "Dialogo per la bacheca",
+        "description": "Scrivi un dialogo molto dolce, ad esempio 'Come sai, sono tuo padre'. Verrà visualizzato come didascalia se l'hai attivato."
+      },
+      "action-title": "Azione",
+      "action-tooltip": {
+        "title": "Azione per la bacheca",
+        "description": "Scrivi qualche azione per la bacheca."
+      },
+      "note-title": "Note",
+      "note-tooltip": {
+        "title": "Note per la bacheca",
+        "description": "Scrivi delle note. Potrebbero essere appunti per le modifiche o solo alcune note per lo scatto."
+      },
+      "clear-note-title": "Pulisci il livello delle note",
+      "clear-note-tooltip": {
+        "title": "Pulisci il livello di disegno delle note",
+        "description": "Cancella il livello delle note per questa bacheca. Puoi anche cancellarlo quando sei nello strumento di disegno delle note e premi:"
+      },
+      "remove-audio": {
+        "title": "Rimuovi audio",
+        "description": "Rimuovi il riferimento audio da questa scheda. Il file rimarrà sul disco a meno che non venga utilizzata la funzione di pulizia scena."
+      },
+      "reference-layer-title": "Livello di riferimento",
+      "reference-layer-tooltip": {
+        "title": "Pulisci il livello di riferimento",
+        "description": "Elimina il livello di riferimento per questa scheda. Puoi anche cancellarlo quando sei sullo strumento di disegno a matita leggera e premi:"
+      },
+      "clear-title": "Pulisci",
+      "merge-down-tooltip": {
+        "title": "Unisci il livello di riempimento fino al livello di riferimento",
+        "description": "Ciò è utile se vuoi prendere il livello di riempimento esistente e ridisegnarlo per pulirlo. Questo combinerà entrambi i livelli al livello di riferimento. Il livello di riempimento sarà vuoto."
+      },
+      "merge-down-title": "Unisci giù",
+      "merge-up-tooltip": {
+        "title": "Unisci il livello di riferimento fino al livello di riempimento",
+        "description": "Ciò è utile se disegni sul livello di riferimento e vuoi mantenerlo nel tuo disegno. Questo combinerà entrambi i livelli al livello di riempimento. Il livello di riferimento sarà vuoto."
+      },
+      "merge-up-title": "Unisci su/giù",
+      "layer-opacity-tooltip": {
+        "title": "Unisci il livello di riferimento fino al livello di riempimento",
+        "description": "Cambia l'opacità del livello di riferimento e del livello del generatore di scatti. Potrai vedere la modifica solo se è presente uno scatto salvato del generatore di scatti o qualcosa sul livello di riferimento."
+      },
+      "sts-random": {
+        "title": "Genera un'immagine casuale dallo scatto",
+        "description": "Impostazioni per il generatore di immagini casuali dallo scatto"
+      },
+      "sts-input1": {
+        "title": "Descrizione scatto",
+        "description": "Descrivi l'inquadratura: ad esempio, campo medio. Premi Invio per generare l'immagine dello scatto."
+      },
+      "sts-select": {
+        "title": "Dati descrizione scatto",
+        "description": "Perfeziona i dati utilizzati per generare le immagini scattate."
+      },
+      "sts-shots": {
+        "title": "Immagini di scatto generate",
+        "description": "Fare clic per perfezionare i dati per l'immagine generata dallo scatto. Fare doppio clic per utilizzare l'immagine generata dallo scatto come livello di riferimento."
+      },
+      "scene": "Scena",
+      "frame-rate": "Frequenza fotogrammi",
+      "show-in-finder-button": {
+        "title": "Mostra bacheca nel file system",
+        "description": "Fare clic qui per visualizzare il file immagine della bacheca nel file system. Questo è utile per usare anche programmi esterni."
+      },
+      "show-in-finder-title": "Mostra nella cartella"
+    },
+    "playback": {
+      "prev-scene-tooltip": {
+        "title": "Scena precedente",
+        "description": "Se la scheda corrente è all'inizio o alla fine della scena, salterà indietro di una scena. Altrimenti salterà all'inizio della scena corrente."
+      },
+      "prev-board-tooltip": {
+        "title": "Bacheca precedente",
+        "description": "Usa i tasti freccia per passare rapidamente da una scheda all'altra e vedere come procede la storia."
+      },
+      "play-tooltip": {
+        "title": "Riproduci/Pausa",
+        "description": "In questo modo passerai dalla riproduzione automatica a quella manuale. Il tempo di riproduzione predefinito è di 2 secondi per scheda o qualsiasi cosa sia impostata come durata della scheda."
+      },
+      "next-board-tooltip": {
+        "title": "Scheda successiva",
+        "description": "Usa i tasti freccia per passare rapidamente da una scheda all'altra e vedere come procede la storia."
+      },
+      "next-scene-tooltip": {
+        "title": "Prossima scena",
+        "description": "Se la scheda corrente è all'inizio o alla fine della scena, salterà avanti di una, altrimenti salterà alla fine della scena corrente."
+      }
+    }
+  },
+  "shot-generator": {
+    "inspector": {
+      "inspected-world": {
+        "file": "File",
+        "scene": "Scena",
+        "ground": "Terra",
+        "bg-color": "Colore di sfondo",
+        "room": "Stanza",
+        "environment": "Ambiente",
+        "ambient-light": "Luce ambientale",
+        "directional-light": "Luce direzionale",
+        "fog": "Nebbia",
+        "grayscale": "Scala di grigi",
+        "shading-mode": "Modalità ombreggiatura"
+      },
+      "common": {
+        "object-creation-help": "Come creare modelli 3D per oggetti personalizzati",
+        "visible": "Visibile",
+        "rotation": "Rotazione",
+        "intensity": "Intensità",
+        "tilt": "Inclina",
+        "distance": "Distanza",
+        "roll": "Ruota",
+        "select-preset-name": "Nuovo nome preimpostato:",
+        "add-preset": "Aggiungi",
+        "height": "Altezza",
+        "tint-color": "Colore tinta",
+        "search-models": "Cerca modelli …",
+        "or": "o",
+        "select-file": "Seleziona file …",
+        "select-image": "Seleziona immagine …",
+        "size": "Dimensione",
+        "width": "Larghezza",
+        "length": "Lunghezza",
+        "depth": "Profondità",
+        "rotate-x": "Ruota su X",
+        "rotate-y": "Ruota su Y",
+        "rotate-z": "Ruota su Z",
+        "scale": "Scala",
+        "opacity": "Opacità",
+        "yes": "Si",
+        "no": "No",
+        "are-you-sure": "Sei sicuro?"
+      },
+      "inspected-element": {
+        "properties": "Proprietà:"
+      },
+      "camera": {
+        "fov": "Campo visivo"
+      },
+      "character": {
+        "skinny": "Magro",
+        "obese": "Obeso",
+        "muscular": "Muscoloso",
+        "head": "Testa",
+        "drop-character": "Rimuovi personaggio dal piano",
+        "morphs": "Forme"
+      },
+      "character-preset": {
+        "preset": "predefinito"
+      },
+      "hand-preset": {
+        "select-saving-hand": "Seleziona una mano da salvare:",
+        "hand": "Mano",
+        "search-hand-pose": "Cerca una posa della mano …",
+        "select-hand": "Allega a",
+        "left-hand": "Mano sinistra",
+        "right-hand": "Mano destra",
+        "both-hands": "Entrambe le mani"
+      },
+      "pose-preset": {
+        "search-pose": "Cerca una posa …",
+        "mirror-pose": "Posa a specchio"
+      },
+      "attachables-inspector": {
+        "attached-to-bone": "Attaccato all'osso"
+      },
+      "hair": {
+        "no-value": "Senza capelli"
+      },
+      "emotions": {
+        "no-value": "Nessuna",
+        "search-list-label": "Cerca emozioni …",
+        "emotion-creation-help": "Come creare emozioni per i personaggi"
+      },
+      "object": {
+        "drop-object": "Elimina oggetto dal piano"
+      },
+      "image": {
+        "image-file": "File immagine",
+        "visible-to-camera": "Visibile alla camera"
+      },
+      "light": {
+        "angle": "Angolo",
+        "penumbra": "Penombra",
+        "decay": "Decadimento"
+      },
+      "volume": {
+        "layer-image-files": "Livelli di file immagine",
+        "select-layer-images": "Seleziona immagini da livelli",
+        "layers": "Livelli",
+        "color": "Colore"
+      }
+    },
+    "toolbar": {
+      "camera": {
+        "tooltip": {
+          "title": "Aggiungi camera",
+          "description": "Aggiungi una nuova camera nella scena."
+        },
+        "title": "Camera"
+      },
+      "object": {
+        "tooltip": {
+          "title": "Aggiungi oggetto",
+          "description": "Aggiungi un nuovo oggetto. È possibile modificare le proprietà a sinistra."
+        },
+        "title": "Oggetto"
+      },
+      "character": {
+        "tooltip": {
+          "title": "Aggiungi personaggio",
+          "description": "Aggiungi un nuovo personaggio nella scena. Puoi modificare la posa trascinando le sfere del punto di controllo."
+        },
+        "title": "Personaggio"
+      },
+      "light": {
+        "tooltip": {
+          "title": "Aggiungi luce",
+          "description": "Aggiungi un punto luce alla scena."
+        },
+        "title": "Luce"
+      },
+      "volume": {
+        "tooltip": {
+          "title": "Aggiungi Volume",
+          "description": "aggiungi un volume come pioggia, nebbia, esplosione."
+        },
+        "title": "Volume"
+      },
+      "image": {
+        "tooltip": {
+          "title": "Aggiungi immagine",
+          "description": "Utile per immagini di riferimento, poster o dipinti opachi nella scena. Una volta aggiunto, utilizzare Impostazioni (a sinistra) per selezionare un file immagine e impostare le proprietà. Puoi anche trascinare e rilasciare un file immagine sulla scena o incollare un'immagine dagli appunti."
+        },
+        "title": "Image"
+      },
+      "open-in-vr": {
+        "tooltip": {
+          "title": "Apri in VR",
+          "description": "Fai clic qui per vedere l'indirizzo che dovresti digitare nel tuo browser VR come Oculus Quest."
+        },
+        "title": "Apri in VR"
+      },
+      "save-to-board": {
+        "tooltip": {
+          "title": "Salva nella bacheca",
+          "description": "Salva lo scatto attuale nello Storyboard corrente. Dopo averlo salvato, puoi chiudere questa finestra."
+        },
+        "title": "Salva nella bacheca"
+      },
+      "insert-as-new-board": {
+        "tooltip": {
+          "title": "Inserisci come nuova bacheca",
+          "description": "Inserisci lo scatto attuale dopo lo Storyboard corrente. Dopo aver inserito una nuova bacheca, puoi chiudere questa finestra o continuare a inserire più scatti."
+        },
+        "title": "Inserisci come nuova bacheca"
+      },
+      "popup": {
+        "open-vr": "Per visualizzarlo, apri un browser web VR",
+        "scary-warning": "Potresti visualizzare un messaggio di avviso inquietante del browser\nperché la realtà virtuale viene eseguita da questo computer, non da un server attendibile.\nNel browser Oculus, fai clic su 'Avanzate' e quindi su 'Procedi' per accettare il certificato autofirmato.\nUlteriori informazioni su {{link}}"
+      }
+    },
+    "camera-panel": {
+      "roll-camera": {
+        "title": "Ruota l'angolo della telecamera",
+        "description": "Ruota la telecamera attorno all'asse per creare un angolo olandese."
+      },
+      "pan-tilt-camera": {
+        "title": "Muovi / inclina angolo della telecamera",
+        "description": "Muovi o inclina la telecamera facendo clic e trascinando questo controllo oppure facendo clic e trascinando sulla vista 3D. Puoi anche spostarti mentre fai clic e trascini."
+      },
+      "move-camera": {
+        "title": "Nuovi telecamera",
+        "description": "Muovi la telecamera avanti, indietro, a sinistra e a destra. Puoi anche eseguire la panoramica mentre muovi la fotocamera. Puoi tenere premuto Maiusc per muoverti più velocemente."
+      },
+      "elevate-camera": {
+        "title": "Alza telecamera",
+        "description": "Alza e abbassa la telecamera. Puoi tenere premuto Maiusc per muoverti più velocemente."
+      },
+      "change-camera-lens": {
+        "title": "Cambia lente telecamera (zoom)",
+        "description": "Modifica il campo visivo dell'obiettivo della telecamera. Se si premono i tasti parentesi, si aggancerà agli angoli standard dell'obiettivo primario."
+      },
+      "auto-shot-framing": {
+        "title": "Inquadratura automatica dello scatto",
+        "description": "Seleziona un personaggio, quindi seleziona le dimensioni dell'inquadratura e/o l'angolo della telecamera per posizionarla automaticamente per inquadrare lo scatto."
+      },
+      "roll": "Ruota",
+      "pan": "Sposta",
+      "tilt": "Inclina",
+      "move": "Muovi",
+      "elevate": "Alza",
+      "lens": "Lenti",
+      "open-shot-explorer": "Apri cartella degli scatti"
+    },
+    "board-inspector": {
+      "dialogue": "DIALOGO",
+      "action": "AZIONE",
+      "notes": "NOTE"
+    },
+    "camera-inspector": {
+      "camera": "Camera",
+      "change-active-camera": {
+        "title": "Cambia telecamera attiva",
+        "description": "Se nella scena sono presenti più camere, è possibile modificare la camera attiva per lo scatto."
+      }
+    },
+    "guides-inspector": {
+      "guides": "Guide"
+    }
+  },
+  "shot-explorer": {
+    "insert-camera": "Inserisci telecamera",
+    "characters-warning": "È necessario aggiungere almeno un personaggio nella scena",
+    "on": "on"
+  },
+  "xr": {
+    "controls": {
+      "width": "Larghezza",
+      "height": "Altezza",
+      "depth": "Profondità",
+      "size": "Dimensione",
+      "opacity": "Opacità",
+      "scale": "Scala",
+      "head": "Testa",
+      "morph-target": "Forma Target",
+      "skinny": "Magro",
+      "muscular": "Muscoloso",
+      "obese": "Obeso",
+      "intensity": "Intensità",
+      "angle": "Angolo",
+      "distance": "Distanza",
+      "penumbra": "Penombra",
+      "visible-to-camera": "Visibile per la camera",
+      "set-visible-to-camera": "Imposta come visibile per la camera",
+      "active-camera": "Telecamera attiva",
+      "set-active-camera": "Imposta come telecamera attiva",
+      "pose-capture": "Cattura la posa",
+      "left": "Sinistra",
+      "both": "Entrambi",
+      "right": "Destra",
+      "objects": "Oggetti"
+    },
+    "boards": {
+      "sg-has-unsaved-changed": "Shot Generator has unsaved changes.",
+      "boards.overwrite-with-vr-changes": "Are you sure you want to overwrite with VR changes?",
+      "changes-not-saved": "Le modifiche non sono state salvate.",
+      "change-without-saving": "Sei sicuro di voler cambiare bacheca senza salvare?",
+      "ok": "OK",
+      "cancel": "Annulla",
+      "settings": "Impostazioni",
+      "show-cameras": "Mostra camera"
+    }
+  },
+  "preferences": {
+    "title": "Preferenze",
+    "restart-hint": "Riavvia Storyboarder per applicare le modifiche.",
+    "show-tooltips": "Mostra suggerimenti",
+    "save-automatically": "Salva automaticamente i dati del progetto",
+    "saving-hint": "Quando disabilitato, utilizzare 'File > Salva' per salvare i dati del progetto. Tieni presente che le modifiche ai dati dell'immagine vengono sempre salvate automaticamente.",
+    "force-psd-reload": "Forza ricarica guardata PSD quando Storyboarder riprende il focus",
+    "psd-reload-hint": "Abilita se lavori da un'unità di rete.\nDisabilita per migliorare le prestazioni quando passi da\nStoryboarder ad altre app. Quando disabilitato, Storyboarder\nguarda solo i file PSD in background (che non è supportato su tutti i computer).",
+    "default-timing": "Temporizzazione bacheca predefinita (in msec)",
+    "external-psd-editor": "Editor PSD esterno",
+    "psd-editor-hint": "Selezionare un'applicazione (es.: .exe o .app). Per impostazione predefinita questa sarà l'applicazione associata nel tuo sistema operativo per l'apertura dei file PSD.\nPer ripristinare le impostazioni predefinite, annulla la richiesta del file.",
+    "reveal-keymap-file": "Rivela il file della mappa dei tasti",
+    "reveal-keymap-file-hint": "Puoi scegliere quali tasti sono associate a quali comandi dello Storyboarder modificando\nil file JSON Keymap in un editor di codice sorgente come Atom o VS Code.",
+    "show-diagnostics": "Mostra diagnostica",
+    "show-diagnostics-hint": "Visualizza la velocità di esecuzione di Storyboarder in fotogrammi al secondo nel tempo. Utile per la risoluzione dei problemi.",
+    "line-delay": "Ritardo linea retta",
+    "line-delay-hint": "Fai una pausa così lunga mentre disegni per passare alla modalità linea retta.<br/>\nTieni premuto <kbd>Maiusc</kbd> per disegnare una linea retta.<br/>Tieni premuto <kbd>Alt/Opzione</kbd> mentre disegni una linea retta per spezzare gli angoli.",
+    "notifications": "Notifiche",
+    "show-notifications": "Abilita notifiche",
+    "aspirational-message": "Mostra affermazioni orarie",
+    "notifications-line-mileage": "Consenti commenti sul chilometraggio della linea",
+    "sounds": "Suoni",
+    "sounds-hint": "I suoni potrebbero rallentare Storyboarder su alcuni computer.<br />Puoi disattivarli per migliorare le prestazioni.",
+    "drawing-sound-effect": "Disegnare effetti sonori",
+    "drawing-melodies": "Disegnare melodie",
+    "ui-sound-effect": "Effetti sonori dell'interfaccia utente",
+    "enable-high-quality-audio": "Abilita audio di alta qualità",
+    "performance-enhancements": "Miglioramenti delle prestazioni",
+    "performance-enhancements-hint": "Disabilitare se il disegno sembra lento.",
+    "high-quality-drawing-engine": "Motore di disegno di alta qualità",
+    "high-quality-drawing-engine-hint": "Se abilitato, viene utilizzato un motore di disegno di qualità superiore con pennelli più avanzati. Quando disabilitato, viene utilizzato il motore di disegno della modalità efficienza (più veloce)..",
+    "languages": "Lingue",
+    "languages-hint": "Seleziona una lingua o creane una tua.",
+    "open-language-editor": "Apri l'editor di lingua",
+    "sign-out": "Disconnessione",
+    "sign-out-hint": "Hai effettuato l'accesso al tuo account Storyboarders.com",
+    "thanks-for-support": "Grazie per il supporto a Storyboarder!",
+    "additional-features-for-support": "Ecco alcune funzionalità aggiuntive per i sostenitori.",
+    "add-watermark": "Aggiungi filigrana alle immagini e ai video esportati.",
+    "custom-watermark": "Filigrana immagine personalizzata (lasciare vuoto per impostazione predefinita)"
+  },
+  "print-project": {
+    "title": "Stampa",
+    "description": "Inizia da un predefinito, quindi regola le impostazioni di layout, intestazione e schede per personalizzare.",
+    "paper-size": "Formato carta",
+    "paper-size-a4-label": "A4",
+    "paper-size-letter-label": "Letter",
+    "paper-size-a4-hint": "A4 (8 ¼″ × 11 ¾″)",
+    "paper-size-letter-hint": "Letter (8 ½″ × 11″)",
+    "preset-selection-title": "Preimpostazione",
+    "preset-selection-none": "(Personalizzata)",
+    "preset-bcdaf15-title": "Minimo orizzontale 3×5",
+    "preset-ef6b965-title": "Minimo orizzontale 3×2",
+    "preset-9782c3c-title": "Orizzontale 3×",
+    "preset-f0b6ef5-title": "Minimo orizzontale 4×4",
+    "preset-97bdefb-title": "Minimo orizzontale 1×",
+    "preset-07fa6ed-title": "Solo orizzontale 1×",
+    "preset-3c3532b-title": "Thumbs orizzontale 2×2",
+    "preset-7415d88-title": "Thumbs orizzontale 3×3",
+    "preset-110b5e4-title": "Landscape Thumbs 6×5",
+    "preset-8949e51-title": "Hey-oh!",
+    "preset-4feebf9-title": "Orizzontale Hey-oh!",
+    "preset-e32799a-title": "Storytime orizzontale 4×2",
+    "preset-d11d6df-title": "Storytime verticale 4x3",
+    "preset-49b851f-title": "Doppio orizzontale 2×",
+    "preset-6df1a27-title": "Doppio orizzontale 2×4",
+    "layout-title": "Disposizione",
+    "landscape": "Orizzontale",
+    "portrait": "Verticale",
+    "grid-title": "Griglia",
+    "boards-layout-title": "Inserisci testo",
+    "boards-layout-column": "Sotto",
+    "boards-layout-row": "Destra",
+    "header-title": "Intestazione",
+    "header-stats-title": "Statistiche",
+    "header-stats-boards": "Tavole",
+    "header-stats-shots": "Scatti",
+    "header-stats-scene-duration": "Durata",
+    "header-stats-aspect-ratio": "Proporzioni",
+    "header-stats-date-exported": "Data",
+    "boards-title": "Tavole",
+    "boards-text-dialogue": "Dialogo",
+    "boards-text-action": "Azione",
+    "boards-text-notes": "Note",
+    "boards-shot-number-title": "Mostra numbero",
+    "boards-time-display-title": "Time",
+    "boards-time-display-none": "Nessuna",
+    "boards-time-display-duration": "Durata",
+    "boards-text-size-title": "Dimensione del testo",
+    "boards-border-style-title": "Bordo",
+    "boards-border-style-label-full": "Immagine & Testo",
+    "boards-border-style-label-minimal": "Solo immagine",
+    "print-button-label": "Stampa!",
+    "export-pdf-button-label": "Esporta PDF",
+    "visible": "Visibile",
+    "hidden": "Nascosto"
+  },
+  "print-worksheet": {
+    "worksheet-title": "Stampa un foglio di lavoro",
+    "worksheet-intro": "Disegna le miniature delle tavole su questo foglio di lavoro stampato e importale magicamente nel tuo file Storyboarder!",
+    "paper-size": "Dimensione dela carta",
+    "letter": "Letter",
+    "format": "A4",
+    "paper-orientation-label": "Orientamento della carta",
+    "paper-orientation-landscape": "Orizontale",
+    "paper-orientation-portrait": "Verticale",
+    "columns-label": "Colonne",
+    "rows-label": "Righe",
+    "spacing-label": "Spaziatura",
+    "copies-label": "Copie",
+    "print-button": "Stampa!",
+    "pdf-button": "Esporta PDF",
+    "prev_button": "Anteprima",
+    "page-info": "Pagina",
+    "next_button": "Prossima"
+  },
+  "new-window": {
+    "creation-title": "Esistono 2 modi per creare un nuovo storyboard. Quale vorresti?",
+    "script-based-title": "Basato su uno script",
+    "script-based-description": "Se stai lavorando su una storia\ncon uno script, puoi specificare la\nscript e Storyboarder ti aiuterà a salire a bordo per ogni scena e\nmostrarti lo script mentre sali a bordo. Sentiti libero di cambiare\nscript durante l'imbarco. Gli script possono essere in formato Fountain (.fountain)\no Final Draft (.fdx)..",
+    "blank-title": "Storyboard vuoto",
+    "blank-description": "Puoi semplicemente creare uno storyboard completamente vuoto. Basta creare tavole e disegnare. Se desideri importare il tuo storyboard basato in uno\nscript in un secondo momento, è facile.\n\nSe hai appena iniziato, perché non creare un nuovo storyboard vuoto per divertimento?",
+    "new-script": "Seleziona script...",
+    "new-blank": "Crea uno vuoto...",
+    "aspect-title": "Quali proporzioni?",
+    "aspect-ultrawide": "Ultralargo",
+    "aspect-doublewide": "Doppio",
+    "aspect-wide": "Wide",
+    "aspect-hd": "HD",
+    "aspect-vertical-hd": "HD verticale",
+    "aspect-square": "Quadrato",
+    "aspect-old": "Vecchio",
+    "aspect-description": "Le proporzioni definiscono la dimensione delle tue tavole.\n\n2,39:1 è il formato più ampio, come quello che guarderesti in un film.\n16:9 è quello che guarderesti su una TV moderna.\n4:3 è ciò che i tuoi nonni guardavano quando gli schermi tremolavano e la programmazione era sana.\n\nNon selezionare HD verticale. L'abbiamo aggiunto per scherzo."
+  }
+}
