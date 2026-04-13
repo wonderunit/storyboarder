@@ -938,10 +938,11 @@ const loadBoardUI = async () => {
   }
   await storyboarderSketchPane.load()
 
-  window.addEventListener('resize', () => {
+  // Store resize handler for cleanup
+  const onWindowResize = () => {
     resize()
-    // storyboarderSketchPane.resize()
-  })
+  }
+  window.addEventListener('resize', onWindowResize)
 
   // fix to prevent pen touch events from being interpreted as scroll commands
   // see: https://github.com/wonderunit/storyboarder/issues/1405
@@ -1640,6 +1641,15 @@ const loadBoardUI = async () => {
 
     window.addEventListener('resize', () =>
       Sonifier.setSize(storyboarderSketchPane.getCanvasSize()))
+
+    // Store handler reference for cleanup
+    const onSonifierResize = () =>
+      Sonifier.setSize(storyboarderSketchPane.getCanvasSize())
+    
+    window.addEventListener('resize', onSonifierResize)
+    
+    // Store reference for later cleanup
+    storyboarderSketchPane._sonifierResizeHandler = onSonifierResize
   }
 
   const onUndoStackAction = async (state) => {
@@ -1757,6 +1767,11 @@ const loadBoardUI = async () => {
     saveImageFile() // NOTE image is saved first, which ensures layers are present in data
     saveBoardFile() // ... then project data can be saved
 
+    // Clean up event listeners to prevent memory leaks
+    window.removeEventListener('resize', onWindowResize)
+    window.removeEventListener('blur', onBlurHandler)
+    window.removeEventListener('focus', onFocusHandler)
+
     // try to close the Shot Generator based on its URL
     //
     // HACK find the Shot Generator window manually
@@ -1801,11 +1816,12 @@ const loadBoardUI = async () => {
     }
   })
 
-  // text input mode on blur, to prevent menu trigger on preferences typing
-  window.addEventListener('blur', () => {
+  // Store handlers for cleanup
+  const onBlurHandler = () => {
     textInputMode = true
-  })
-  window.addEventListener('focus', () => {
+  }
+  
+  const onFocusHandler = () => {
     // is a child window still claiming focus?
     for (let w of remote.getCurrentWindow().getChildWindows()) {
       if (w.isFocused()) {
@@ -1818,7 +1834,18 @@ const loadBoardUI = async () => {
     // otherwise, allow direct text input again
     textInputMode = false
     
-  })
+    // Check if Shot Generator is focused
+    for (let w of remote.getCurrentWindow().getChildWindows()) {
+      if (w.isFocused() && w.webContents.getURL().match(/shot\-generator\.html/)) {
+        textInputMode = true
+        return
+      }
+    }
+  }
+
+  // text input mode on blur, to prevent menu trigger on preferences typing
+  window.addEventListener('blur', onBlurHandler)
+  window.addEventListener('focus', onFocusHandler)
   // changedPrefs is an object with only the top-level primitive prefs that have actually changed (it does not track objects or arrays nested in prefs)
   ipcRenderer.on('prefs:change', (event, changedPrefs) => {
     if (Object.keys(changedPrefs).length) {

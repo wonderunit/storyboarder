@@ -50,5 +50,28 @@ module.exports = {
     alias: {
       'events': 'node_modules/events/index.js'
     }
+  },
+  optimization: {
+    minimize: true,
+    splitChunks: {
+      chunks: 'all',
+      cacheGroups: {
+        vendors: {
+          test: /[\\/]node_modules[\\/]/,
+          priority: -10,
+          reuseExistingChunk: true
+        },
+        default: {
+          minChunks: 2,
+          priority: -20,
+          reuseExistingChunk: true
+        }
+      }
+    }
+  },
+  performance: {
+    hints: 'warning',
+    maxAssetSize: 10000000,
+    maxEntrypointSize: 10000000
   }
 }
